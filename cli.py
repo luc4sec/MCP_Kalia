@@ -18,23 +18,23 @@ class ChatGPTCLI:
 
     def print_welcome(self):
         welcome_text = """
-        [bold blue]ChatGPT CLI[/bold blue]
+        [bold blue]KalIA GPT[/bold blue]
         
-        Bem-vindo ao CLI do ChatGPT!
-        Digite 'exit' para sair ou 'help' para ver os comandos disponíveis.
+        Welcome to the KalIA GPT CLI!
+        Type 'exit' to exit or 'help' to see available commands.
         """
-        self.console.print(Panel(welcome_text, title="[bold green]Bem-vindo![/bold green]"))
+        self.console.print(Panel(welcome_text, title="[bold green]Welcome![/bold green]"))
 
     def print_help(self):
         help_text = """
-        [bold]Comandos disponíveis:[/bold]
+        [bold]Available commands:[/bold]
         
-        [cyan]help[/cyan] - Mostra esta mensagem de ajuda
-        [cyan]exit[/cyan] - Sai do programa
-        [cyan]clear[/cyan] - Limpa o histórico de mensagens
-        [cyan]exec <comando>[/cyan] - Executa um comando no sistema local
+        [cyan]help[/cyan] - Shows this help message
+        [cyan]exit[/cyan] - Exits the program
+        [cyan]clear[/cyan] - Clears message history
+        [cyan]exec <command>[/cyan] - Executes a command on the local system
         """
-        self.console.print(Panel(help_text, title="[bold green]Ajuda[/bold green]"))
+        self.console.print(Panel(help_text, title="[bold green]Help[/bold green]"))
 
     def send_message(self, message):
         try:

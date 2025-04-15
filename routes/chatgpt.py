@@ -14,19 +14,15 @@ def openai_index():
 
 @openai_bp.route('/4o-mini', methods=['POST'])
 def chatgpt_4o():
-
-    # Verifica se foi enviado um corpo JSON
     data = request.get_json()
     if not data:
         return responses.Error400("error", "Dados JSON não fornecidos")
 
-    # Extrai os parâmetros necessários
     messages_param = data.get("messages")
-    system_rules = data.get("system_rules", SYSTEM_RULES)  # Usa o valor padrão se não fornecido
-    tools_param = data.get("tools", TOOLS)  # Usa o valor padrão se não fornecido
+    system_rules = data.get("system_rules", SYSTEM_RULES)
+    tools_param = data.get("tools", TOOLS)
     if messages_param is None:
         return responses.Error400("error", "Parâmetro 'messages' é obrigatório")
-    # Desserializa as mensagens
     if isinstance(messages_param, list):
         messages = messages_param
     else:
@@ -34,7 +30,6 @@ def chatgpt_4o():
             messages = json.loads(messages_param)
         except Exception as e:
             return responses.Error400("error", f"Erro ao desserializar mensagens: {e}")
-    # Desserializa as funções
     functions = []
     if isinstance(tools_param, list):
         functions = tools_param
@@ -47,15 +42,12 @@ def chatgpt_4o():
         functions = None
         tools = None
     else:
-        # Converte functions para o formato de tools
         tools = [{"type": "function", "function": func} for func in functions]
 
-    # Adiciona o prompt personalizado
     messages.append({
         "role": "system",
         "content": system_rules
     })
-    # Recupera a chave da API
     api_key = os.getenv("OPENAI_API_KEY", "SEM_TOKEN")
     if not api_key or api_key == "SEM_TOKEN":
         return responses.Error500("Por favor, defina a variável de ambiente OPENAI_API_KEY", None)
@@ -64,7 +56,6 @@ def chatgpt_4o():
         api_key=api_key,
     )
 
-    # Função auxiliar para substituir placeholders no formato $(campo) em qualquer estrutura
     def substitute_placeholders(item, payload: dict):
         import re
         if isinstance(item, str):
@@ -76,14 +67,12 @@ def chatgpt_4o():
         return item
 
     try:
-        # Loop para interpretar funções quantas vezes forem necessárias
         while True:
             response = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=messages,
                 tools=tools
             )
-            # Se houver chamadas de função, processa-as
             if response.choices[0].message.tool_calls:
                 for tool_call in response.choices[0].message.tool_calls:
                     functionJson = [item for item in tools if item.get("function", {}).get("name") == tool_call.function.name]
@@ -116,14 +105,12 @@ def chatgpt_4o():
                                 json_args = json.loads(tool_call.function.arguments)
                                 print(f"\n\n// Executando: {json_args.get('command')}")
                                 result = subprocess.check_output(json_args.get("command"), shell=True, text=True)
-                                # Adiciona o resultado da execução ao chat
                                 messages.append({
                                     "role": "assistant",
                                     "content": f"Comando executado: {json_args.get('command')}\nResultado:\n{result}"
                                 })
                             except subprocess.CalledProcessError as e:
                                 result = f"Erro ao executar comando: {str(e)}"
-                                # Adiciona o erro ao chat
                                 messages.append({
                                     "role": "assistant",
                                     "content": f"Erro ao executar comando: {json_args.get('command')}\n{str(e)}"
@@ -133,7 +120,6 @@ def chatgpt_4o():
                     else:
                         result = "Função não implementada"
                     
-                    # Adiciona a mensagem do assistente com a chamada da função e seu resultado
                     messages.append({
                         "role": "assistant",
                         "content": None,
@@ -146,8 +132,8 @@ def chatgpt_4o():
                         "tool_call_id": tool_call.id,
                         "content": str(result)
                     })
-                continue  # Repete o loop para interpretar novas chamadas se houver
-            break  # Sai do loop se não houver nenhuma chamada de função
+                continue
+            break
     
         message = response.choices[0].message.content
         return responses.Ok200("success", message)
