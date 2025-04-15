@@ -1,0 +1,6 @@
+flask==2.3.3
+python-dotenv==1.0.0
+openai
+requests>=2.31.0
+rich>=13.7.0
+argparse>=1.4.0
